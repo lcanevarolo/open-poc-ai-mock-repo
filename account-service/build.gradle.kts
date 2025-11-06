@@ -3,6 +3,8 @@
  */
 
 plugins {
+    id("java")
+    id("jacoco")
     id("buildlogic.java-conventions")
 }
 
@@ -25,3 +27,14 @@ dependencies {
 }
 
 description = "account-service"
+tasks.test {
+    finalizedBy(tasks.jacocoTestReport)
+}
+
+tasks.jacocoTestReport {
+    dependsOn(tasks.test)
+    reports {
+        xml.required.set(true)
+        html.required.set(true)
+    }
+}

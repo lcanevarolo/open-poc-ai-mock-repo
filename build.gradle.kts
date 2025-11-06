@@ -16,3 +16,11 @@ subprojects {
         }
     }
 }
+plugins {
+    id("java")
+    id("jacoco")
+    id("buildlogic.java-conventions")
+}
+jacoco {
+    toolVersion = "0.8.10"
+}

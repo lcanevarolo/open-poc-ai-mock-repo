@@ -32,4 +32,8 @@ jobs:
     - name: Build with Gradle Wrapper
       run: ./gradlew build
 
+    - name: Run tests with coverage (Jacoco)
+      run: ./gradlew test jacocoTestReport
+
+
 

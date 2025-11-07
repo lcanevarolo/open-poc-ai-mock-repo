@@ -32,8 +32,14 @@ jobs:
     - name: Build with Gradle Wrapper
       run: ./gradlew build
 
-    - name: Run tests with coverage (Jacoco)
-      run: ./gradlew test jacocoTestReport
+    - name: Run aggregated tests with coverage (Jacoco)
+      run: ./gradlew jacocoRootReport
+
+    - name: Upload aggregated Jacoco coverage report
+      uses: actions/upload-artifact@v4
+      with:
+        name: jacoco-root-report
+        path: build/reports/jacoco/jacocoRootReport/html
 
 
 

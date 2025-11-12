@@ -41,13 +41,15 @@ jobs:
     #     name: jacoco-root-report
     #     path: build/reports/jacoco/jacocoRootReport/html
     # Checkout external repo with Python scripts
-    - name: Checkout Python scripts repo
-      uses: actions/checkout@v4
+    - name: Add SSH key and clone private repo
+      uses: webfactory/ssh-agent@v0.9.1
       with:
-        repository: lcanevarolo/open-poc-ai-unit-tests
-        path: open-poc-ai-unit-tests
-        token: ${{ secrets.POC_AI_READ_PRIVATE_KEY }}
+        ssh-private-key: ${{ secrets.POC_AI_READ_PRIVATE_KEY }}
 
+    - name: Clone private repo
+      run: |
+        git clone git@github.com:lcanevarolo/open-poc-ai-unit-tests.git ai-unit-tests
+        ls -la ai-unit-tests
     # Set up Python
     - name: Set up Python 3.x
       uses: actions/setup-python@v5
@@ -57,7 +59,7 @@ jobs:
     # Install requirements if requirements.txt exists
     - name: Install Python dependencies
       run: |
-        pip install -r open-poc-ai-unit-tests/requirements.txt
+        pip install -r ai-unit-tests/requirements.txt
 
     # Run Python scripts (customize script names as needed)
     - name: Run Python scripts

@@ -29,8 +29,8 @@ jobs:
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
 
-    - name: Build with Gradle Wrapper
-      run: ./gradlew build
+    # - name: Build with Gradle Wrapper
+    #   run: ./gradlew build
 
     - name: Run aggregated tests with coverage (Jacoco)
       run: ./gradlew jacocoRootReport
@@ -40,6 +40,28 @@ jobs:
       with:
         name: jacoco-root-report
         path: build/reports/jacoco/jacocoRootReport/html
+    # Checkout external repo with Python scripts
+    - name: Checkout Python scripts repo
+      uses: actions/checkout@v4
+      with:
+        repository: lcanevarolo/open-poc-ai-unit-tests
+        path: open-poc-ai-unit-tests
+
+    # Set up Python
+    - name: Set up Python 3.x
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.x'
+
+    # Install requirements if requirements.txt exists
+    - name: Install Python dependencies
+      run: |
+        pip install -r open-poc-ai-unit-tests/requirements.txt
+
+    # Run Python scripts (customize script names as needed)
+    - name: Run Python scripts
+      run: |
+        python open-poc-ai-unit-tests/main_script.py
 
 
 

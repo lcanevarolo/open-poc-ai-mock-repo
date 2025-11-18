@@ -3,10 +3,10 @@ name: Java CI with Gradle
 on:
   workflow_dispatch:
     inputs:
-      test:
-        description: 'Test'
+      branch_to_clone:
+        description: 'The branch of the private repo to clone'
         required: true
-        default: 'something'
+        default: 'develop/restructure' #change to main once ready
         type: string
 
 
@@ -29,33 +29,23 @@ jobs:
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
 
-    # - name: Build with Gradle Wrapper
-    #   run: ./gradlew build
+    - name: Build with Gradle Wrapper
+      run: ./gradlew build
 
-    # - name: Run aggregated tests with coverage (Jacoco)
-    #   run: ./gradlew jacocoRootReport
+    - name: Run aggregated tests with coverage (Jacoco)
+      run: ./gradlew jacocoRootReport
 
-    # - name: Upload aggregated Jacoco coverage report
-    #   uses: actions/upload-artifact@v4
-    #   with:
-    #     name: jacoco-root-report
-    #     path: build/reports/jacoco/jacocoRootReport/html
+    - name: Upload aggregated Jacoco coverage report
+      uses: actions/upload-artifact@v4
+      with:
+        name: jacoco-root-report
+        path: build/reports/jacoco/jacocoRootReport/html
     
-    # Checkout external repo with Python scripts
-    # - name: Add SSH key and clone private repo
-    #   uses: webfactory/ssh-agent@v0.9.1
-    #   with:
-    #     ssh-private-key: ${{ secrets.POC_AI_READ_PRIVATE_KEY }}
-
-    # - name: Clone private repo
-    #   run: |
-    #     git clone git@github.com:lcanevarolo/open-poc-ai-unit-tests.git ai-unit-tests
-    #     ls -la ai-unit-tests
     - name: Clone private repo
       uses: actions/checkout@v5
       with:
         repository: lcanevarolo/open-poc-ai-unit-tests
-        ref: develop/restructure
+        ref: ${{ inputs.branch_to_clone }}
         token: ${{ secrets.POC_AI_READ_PAT }}
         path: open-poc-ai-unit-tests
 
@@ -74,4 +64,5 @@ jobs:
     # Run Python scripts 
     - name: Run Python scripts
       run: |
-        python open-poc-ai-unit-tests/src/cli/cli.py
+        #python open-poc-ai-unit-tests/src/cli/cli.py
+        echo "Enable when ready"

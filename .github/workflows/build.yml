@@ -72,7 +72,7 @@ jobs:
 
     - name: Run command
       run: |
-        la -a open-poc-ai-unit-tests
+        ls -la open-poc-ai-unit-tests
     # Run Python scripts (customize script names as needed)
     # - name: Run Python scripts
     #   run: |

@@ -54,7 +54,7 @@ jobs:
     - name: Clone private repo
       uses: actions/checkout@v4
       with:
-        repository: lcanevarolo/open-poc-ai-unit-tests
+        repository: lcanevarolo/open-poc-ai-unit-tests@develop/restructure
         token: ${{ secrets.POC_AI_READ_PAT }}
         path: open-poc-ai-unit-tests
 

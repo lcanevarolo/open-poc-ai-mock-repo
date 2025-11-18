@@ -56,7 +56,7 @@ jobs:
       with:
         repository: lcanevarolo/open-poc-ai-unit-tests
         token: ${{ secrets.POC_AI_READ_PAT }}
-        path: ai-unit-tests
+        path: open-poc-ai-unit-tests
 
 
     # Set up Python
@@ -68,12 +68,15 @@ jobs:
     # Install requirements if requirements.txt exists
     - name: Install Python dependencies
       run: |
-        pip install -r ai-unit-tests/requirements.txt
+        pip install -r open-poc-ai-unit-tests/requirements.txt
 
-    # Run Python scripts (customize script names as needed)
-    - name: Run Python scripts
+    - name: Run command
       run: |
-        python open-poc-ai-unit-tests/main_script.py
+        la -a open-poc-ai-unit-tests
+    # Run Python scripts (customize script names as needed)
+    # - name: Run Python scripts
+    #   run: |
+    #     python open-poc-ai-unit-tests/main_script.py
 
 
 

@@ -29,8 +29,8 @@ jobs:
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
 
-    - name: Build with Gradle Wrapper
-      run: ./gradlew build
+    # - name: Build with Gradle Wrapper
+    #   run: ./gradlew build
 
     - name: Run aggregated tests with coverage (Jacoco)
       run: ./gradlew jacocoRootReport

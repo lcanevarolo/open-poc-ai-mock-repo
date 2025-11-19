@@ -3,10 +3,10 @@ name: Java CI with Gradle
 on:
   workflow_dispatch:
     inputs:
-      test:
-        description: 'Test'
+      branch_to_clone:
+        description: 'The branch of the private repo to clone'
         required: true
-        default: 'something'
+        default: 'develop/restructure' #change to main once ready
         type: string
 
 
@@ -29,8 +29,8 @@ jobs:
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
 
-    - name: Build with Gradle Wrapper
-      run: ./gradlew build
+    # - name: Build with Gradle Wrapper
+    #   run: ./gradlew build
 
     - name: Run aggregated tests with coverage (Jacoco)
       run: ./gradlew jacocoRootReport
@@ -40,6 +40,29 @@ jobs:
       with:
         name: jacoco-root-report
         path: build/reports/jacoco/jacocoRootReport/html
+    
+    - name: Clone private repo
+      uses: actions/checkout@v5
+      with:
+        repository: lcanevarolo/open-poc-ai-unit-tests
+        ref: ${{ inputs.branch_to_clone }}
+        token: ${{ secrets.POC_AI_READ_PAT }}
+        path: open-poc-ai-unit-tests
 
 
+    # Set up Python
+    - name: Set up Python 3.x
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.x'
 
+    # Install requirements if requirements.txt exists
+    - name: Install Python dependencies
+      run: |
+        pip install -r open-poc-ai-unit-tests/requirements.txt
+
+    # Run Python scripts 
+    - name: Run Python scripts
+      run: |
+        #python open-poc-ai-unit-tests/src/cli/cli.py
+        echo "Enable when ready"

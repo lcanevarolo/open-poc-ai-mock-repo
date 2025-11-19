@@ -49,7 +49,21 @@ jobs:
         token: ${{ secrets.POC_AI_READ_PAT }}
         path: open-poc-ai-unit-tests
 
+    - name: Check application config file
+      run: |
+        cat open-poc-ai-unit-tests/configs/application.yaml
 
+    - name: Update values.yaml
+      uses: fjogeleit/yaml-update-action@main
+      with:
+        valueFile: 'open-poc-ai-unit-tests/configs/application.yaml'
+        propertyPath: 'root'
+        value: ${{ github.workspace }}
+        commitChange: false
+
+    - name: Check application config file
+      run: |
+        cat open-poc-ai-unit-tests/configs/application.yaml
     # Set up Python
     - name: Set up Python 3.x
       uses: actions/setup-python@v5
@@ -59,10 +73,13 @@ jobs:
     # Install requirements if requirements.txt exists
     - name: Install Python dependencies
       run: |
-        pip install -r open-poc-ai-unit-tests/requirements.txt
+        pip install -e ./open-poc-ai-unit-tests
 
     # Run Python scripts 
     - name: Run Python scripts
       run: |
-        #python open-poc-ai-unit-tests/src/cli/cli.py
-        echo "Enable when ready"
+        export PYTHONPATH="${PYTHONPATH}:$(pwd)/open-poc-ai-unit-tests/src"
+        cd open-poc-ai-unit-tests/src/cli
+        pwd
+        python ./cli.py
+        #echo "Enable when ready"

@@ -8,6 +8,11 @@ on:
         required: true
         default: 'develop/restructure'
         type: string
+      run_id:
+        description: 'The run_id of the build workflow to fetch artifacts from'
+        required: false
+        type: string
+        default: '19674748530'
   workflow_run:
     workflows: ["Java CI with Gradle"]
     types:
@@ -22,6 +27,11 @@ jobs:
         with:
           name: jacoco-root-report
           path: build/reports/jacoco/jacocoRootReport
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.id || inputs.run_id }}
+
+      - name: Setup xmllint
+        uses: Bpolitycki/setup-xmllint-action@1.0.1
 
       - name: Extract Jacoco coverage
         id: jacoco_coverage
@@ -71,6 +81,7 @@ jobs:
       - name: Install Python dependencies
         run: |
           pip install -e ./open-poc-ai-unit-tests
+          pip install langchain-community
 
       - name: Run Python scripts
         run: |

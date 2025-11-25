@@ -1,0 +1,81 @@
+name: Post Build Processing
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch_to_clone:
+        description: 'The branch of the private repo to clone'
+        required: true
+        default: 'develop/restructure'
+        type: string
+  workflow_run:
+    workflows: ["Java CI with Gradle"]
+    types:
+      - completed
+
+jobs:
+  post-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download Jacoco XML report
+        uses: actions/download-artifact@v4
+        with:
+          name: jacoco-root-report
+          path: build/reports/jacoco/jacocoRootReport
+
+      - name: Extract Jacoco coverage
+        id: jacoco_coverage
+        run: |
+          COVERED=$(xmllint --xpath "string(//report/counter[@type='INSTRUCTION']/@covered)" build/reports/jacoco/jacocoRootReport/jacocoRootReport.xml)
+          MISSED=$(xmllint --xpath "string(//report/counter[@type='INSTRUCTION']/@missed)" build/reports/jacoco/jacocoRootReport/jacocoRootReport.xml)
+          TOTAL=$((COVERED + MISSED))
+          if [ "$TOTAL" -eq 0 ]; then
+            PERCENT=0
+          else
+            PERCENT=$((100 * COVERED / TOTAL))
+          fi
+          echo "COVERAGE_PERCENT=$PERCENT" >> $GITHUB_ENV
+
+      - name: Clone private repo
+        uses: actions/checkout@v5
+        with:
+          repository: lcanevarolo/open-poc-ai-unit-tests
+          ref: ${{ inputs.branch_to_clone || github.event.workflow_run.head_branch }}
+          token: ${{ secrets.POC_AI_READ_PAT }}
+          path: open-poc-ai-unit-tests
+
+      - name: Check application config file
+        run: |
+          cat open-poc-ai-unit-tests/configs/application.yaml
+
+      - name: Update application.yaml
+        uses: fjogeleit/yaml-update-action@main
+        with:
+          valueFile: 'open-poc-ai-unit-tests/configs/application.yaml'
+          commitChange: false
+          changes: |
+            {
+              "root": "${{ github.workspace }}",
+              "executor.jvm_path": "${{ env.JAVA_HOME }}"
+            }
+
+      - name: Check application config file
+        run: |
+          cat open-poc-ai-unit-tests/configs/application.yaml
+
+      - name: Set up Python 3.x
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install Python dependencies
+        run: |
+          pip install -e ./open-poc-ai-unit-tests
+
+      - name: Run Python scripts
+        run: |
+          export PYTHONPATH="${PYTHONPATH}:$(pwd)/open-poc-ai-unit-tests/src"
+          cd open-poc-ai-unit-tests/src/cli
+          pwd
+          python ./cli.py
+          #echo "Enable when ready"

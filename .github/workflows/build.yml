@@ -40,6 +40,19 @@ jobs:
       with:
         name: jacoco-root-report
         path: build/reports/jacoco/jacocoRootReport/html
+
+    - name: Extract Jacoco coverage
+      id: jacoco_coverage
+      run: |
+        COVERED=$(xmllint --xpath "string(//report/counter[@type='INSTRUCTION']/@covered)" build/reports/jacoco/jacocoRootReport/jacocoRootReport.xml)
+        MISSED=$(xmllint --xpath "string(//report/counter[@type='INSTRUCTION']/@missed)" build/reports/jacoco/jacocoRootReport/jacocoRootReport.xml)
+        TOTAL=$((COVERED + MISSED))
+        if [ "$TOTAL" -eq 0 ]; then
+          PERCENT=0
+        else
+          PERCENT=$((100 * COVERED / TOTAL))
+        fi
+        echo "COVERAGE_PERCENT=$PERCENT" >> $GITHUB_ENV
     
     - name: Clone private repo
       uses: actions/checkout@v5
@@ -53,13 +66,16 @@ jobs:
       run: |
         cat open-poc-ai-unit-tests/configs/application.yaml
 
-    - name: Update values.yaml
+    - name: Update application.yaml
       uses: fjogeleit/yaml-update-action@main
       with:
         valueFile: 'open-poc-ai-unit-tests/configs/application.yaml'
-        propertyPath: 'root'
-        value: ${{ github.workspace }}
         commitChange: false
+        changes: |
+          {
+            "root": "${{ github.workspace }}",
+            "executor.jvm_path": "${{ env.JAVA_HOME }}"
+          }
 
     - name: Check application config file
       run: |

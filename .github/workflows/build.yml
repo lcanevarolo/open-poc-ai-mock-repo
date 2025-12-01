@@ -1,5 +1,4 @@
 name: Java CI with Gradle
-
 on:
   workflow_dispatch:
     inputs:
@@ -8,6 +7,11 @@ on:
         required: true
         default: 'develop/restructure' #change to main once ready
         type: string
+      generate_test:
+        description: 'Esegui generazione test automatica'
+        required: false
+        type: boolean
+        default: false
 
 
 jobs:
@@ -29,9 +33,6 @@ jobs:
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
 
-    # - name: Build with Gradle Wrapper
-    #   run: ./gradlew build
-
     - name: Run aggregated tests with coverage (Jacoco)
       run: ./gradlew jacocoRootReport
 
@@ -40,3 +41,13 @@ jobs:
       with:
         name: jacoco-root-report
         path: build/reports/jacoco/jacocoRootReport
+
+  post-build:
+    if: ${{ github.event.inputs.generate_test == 'true' }}
+    needs: build
+    uses: ./.github/workflows/post-build.yml
+    with:
+      branch_to_clone: ${{ github.event.inputs.branch_to_clone }}
+      run_id: ${{ github.run_id }}
+    secrets:
+      POC_AI_READ_PAT: ${{ secrets.POC_AI_READ_PAT }}

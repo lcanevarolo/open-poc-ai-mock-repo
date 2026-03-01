@@ -75,6 +75,12 @@ jobs:
           token: ${{ secrets.POC_AI_READ_PAT }}
           path: open-poc-ai-unit-tests
 
+      - name: Remove dataset folder
+        run: |
+          rm -rf open-poc-ai-unit-tests/datasets
+          rm -rf open-poc-ai-unit-tests/demo
+          rm -rf open-poc-ai-unit-tests/codewars-katas
+
       - name: Check application config file
         run: |
           ls -la open-poc-ai-unit-tests/

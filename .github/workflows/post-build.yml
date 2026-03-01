@@ -30,6 +30,11 @@ jobs:
   post-build:
     runs-on: ubuntu-latest
     steps:
+      - name: Set up JDK 8
+        uses: actions/setup-java@v4
+        with:
+          java-version: '8'
+          distribution: 'zulu'
       - uses: actions/checkout@v4
       - name: Download Jacoco XML report
         uses: actions/download-artifact@v4
@@ -78,7 +83,8 @@ jobs:
           changes: |
             {
               "target_project_path": "${{ github.workspace }}",
-              "executor.jvm_path": "${{ env.JAVA_HOME }}"
+              "executor.jvm_path": "${{ env.JAVA_HOME }}",
+              "executor.baseline_run_needed": false
             }
 
       - name: Check application config file
@@ -94,11 +100,7 @@ jobs:
         run: |
           pip install -e ./open-poc-ai-unit-tests
 
-      - name: Set up JDK 8
-        uses: actions/setup-java@v4
-        with:
-          java-version: '8'
-          distribution: 'zulu'
+
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v5
       - name: Grant execute permission for gradlew
@@ -109,7 +111,7 @@ jobs:
           export PYTHONPATH="${PYTHONPATH}:$(pwd)/open-poc-ai-unit-tests/src"
           cd open-poc-ai-unit-tests/src/cli
           pwd
-          python ./cli.py --evaluate-only=true
+          python ./cli.py
 
       - name: Re-run Jacoco coverage after Python script
         run: |

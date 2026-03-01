@@ -35,6 +35,9 @@ jobs:
         with:
           java-version: '8'
           distribution: 'zulu'
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v5
+
       - uses: actions/checkout@v4
       - name: Download Jacoco XML report
         uses: actions/download-artifact@v4
@@ -43,22 +46,24 @@ jobs:
           path: build/reports/jacoco/jacocoRootReport
           github-token: ${{ secrets.GITHUB_TOKEN }}
           run-id: ${{inputs.run_id }}
-
+      - name: Rename Jacoco report file
+        run: |
+          mv build/reports/jacoco/jacocoRootReport/jacocoRootReport.xml build/reports/jacoco/jacocoTestReport.xml
       - name: Setup xmllint
         uses: Bpolitycki/setup-xmllint-action@1.0.1
 
-      - name: Extract Jacoco coverage (before)
-        id: jacoco_coverage_before
-        run: |
-          COVERED=$(xmllint --xpath "string(//report/counter[@type='INSTRUCTION']/@covered)" build/reports/jacoco/jacocoRootReport/jacocoRootReport.xml)
-          MISSED=$(xmllint --xpath "string(//report/counter[@type='INSTRUCTION']/@missed)" build/reports/jacoco/jacocoRootReport/jacocoRootReport.xml)
-          TOTAL=$((COVERED + MISSED))
-          if [ "$TOTAL" -eq 0 ]; then
-            PERCENT=0
-          else
-            PERCENT=$((100 * COVERED / TOTAL))
-          fi
-          echo "COVERAGE_PERCENT_BEFORE=$PERCENT" >> $GITHUB_ENV
+      # - name: Extract Jacoco coverage (before)
+      #   id: jacoco_coverage_before
+      #   run: |
+      #     COVERED=$(xmllint --xpath "string(//report/counter[@type='INSTRUCTION']/@covered)" build/reports/jacoco/jacocoRootReport/jacocoRootReport.xml)
+      #     MISSED=$(xmllint --xpath "string(//report/counter[@type='INSTRUCTION']/@missed)" build/reports/jacoco/jacocoRootReport/jacocoRootReport.xml)
+      #     TOTAL=$((COVERED + MISSED))
+      #     if [ "$TOTAL" -eq 0 ]; then
+      #       PERCENT=0
+      #     else
+      #       PERCENT=$((100 * COVERED / TOTAL))
+      #     fi
+      #     echo "COVERAGE_PERCENT_BEFORE=$PERCENT" >> $GITHUB_ENV
 
       - name: Clone private repo
         uses: actions/checkout@v5
@@ -99,10 +104,7 @@ jobs:
       - name: Install Python dependencies
         run: |
           pip install -e ./open-poc-ai-unit-tests
-
-
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v5
+      
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
@@ -113,31 +115,35 @@ jobs:
           pwd
           python ./cli.py
 
-      - name: Re-run Jacoco coverage after Python script
+      - name: Check application config file
         run: |
-          cd ${{ github.workspace }}
-          ./gradlew jacocoRootReport
+          ls -la .poc_ai_output
+          cat .poc_ai_output/manifest.json
+      # - name: Re-run Jacoco coverage after Python script
+      #   run: |
+      #     cd ${{ github.workspace }}
+      #     ./gradlew jacocoRootReport
      
-      - name: Extract Jacoco coverage (after)
-        id: jacoco_coverage_after
-        run: |
-          COVERED=$(xmllint --xpath "string(//report/counter[@type='INSTRUCTION']/@covered)" build/reports/jacoco/jacocoRootReport/jacocoRootReport.xml)
-          MISSED=$(xmllint --xpath "string(//report/counter[@type='INSTRUCTION']/@missed)" build/reports/jacoco/jacocoRootReport/jacocoRootReport.xml)
-          TOTAL=$((COVERED + MISSED))
-          if [ "$TOTAL" -eq 0 ]; then
-            PERCENT=0
-          else
-            PERCENT=$((100 * COVERED / TOTAL))
-          fi
-          echo "COVERAGE_PERCENT_AFTER=$PERCENT" >> $GITHUB_ENV    
-      - name: Commit and push if coverage increased
-        if: ${{ env.COVERAGE_PERCENT_AFTER > env.COVERAGE_PERCENT_BEFORE }}
-        run: |
-          git config --global user.name "github-actions"
-          git config --global user.email "github-actions@github.com"
-          BRANCH_NAME="auto/test-gen-increase-$(date +%Y%m%d%H%M%S)"
-          git checkout -b "$BRANCH_NAME"
-          git add .
-          git commit -m "test(gen): auto-commit for increased coverage"
-          git push --set-upstream origin "$BRANCH_NAME"
-          #TODO: automate PR creation
+      # - name: Extract Jacoco coverage (after)
+      #   id: jacoco_coverage_after
+      #   run: |
+      #     COVERED=$(xmllint --xpath "string(//report/counter[@type='INSTRUCTION']/@covered)" build/reports/jacoco/jacocoRootReport/jacocoRootReport.xml)
+      #     MISSED=$(xmllint --xpath "string(//report/counter[@type='INSTRUCTION']/@missed)" build/reports/jacoco/jacocoRootReport/jacocoRootReport.xml)
+      #     TOTAL=$((COVERED + MISSED))
+      #     if [ "$TOTAL" -eq 0 ]; then
+      #       PERCENT=0
+      #     else
+      #       PERCENT=$((100 * COVERED / TOTAL))
+      #     fi
+      #     echo "COVERAGE_PERCENT_AFTER=$PERCENT" >> $GITHUB_ENV    
+      # - name: Commit and push if coverage increased
+      #  if: ${{ env.COVERAGE_PERCENT_AFTER > env.COVERAGE_PERCENT_BEFORE }}
+      #   run: |
+      #     git config --global user.name "github-actions"
+      #     git config --global user.email "github-actions@github.com"
+      #     BRANCH_NAME="auto/test-gen-increase-$(date +%Y%m%d%H%M%S)"
+      #     git checkout -b "$BRANCH_NAME"
+      #     git add .
+      #     git commit -m "test(gen): auto-commit for increased coverage"
+      #     git push --set-upstream origin "$BRANCH_NAME"
+      #     #TODO: automate PR creation

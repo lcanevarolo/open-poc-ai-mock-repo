@@ -5,13 +5,13 @@ on:
       branch_to_clone:
         description: 'The branch of the private repo to clone'
         required: true
-        default: 'develop/restructure'
+        default: 'demo'
         type: string
       run_id:
         description: 'The run_id of the build workflow to fetch artifacts from'
         required: false
         type: string
-        default: '19830265832'
+        default: '22545934112'
   workflow_call:
     inputs:
       branch_to_clone:
@@ -65,12 +65,15 @@ jobs:
 
       - name: Check application config file
         run: |
-          cat open-poc-ai-unit-tests/configs/application.yaml
+          ls -la open-poc-ai-unit-tests/
+          ls -la open-poc-ai-unit-tests/resources/
+          ls -la open-poc-ai-unit-tests/resources/config/
+          cat open-poc-ai-unit-tests/resources/config/application.yaml
 
       - name: Update application.yaml
         uses: fjogeleit/yaml-update-action@main
         with:
-          valueFile: 'open-poc-ai-unit-tests/configs/application.yaml'
+          valueFile: 'open-poc-ai-unit-tests/resources/config/application.yaml'
           commitChange: false
           changes: |
             {
@@ -80,7 +83,7 @@ jobs:
 
       - name: Check application config file
         run: |
-          cat open-poc-ai-unit-tests/configs/application.yaml
+          cat open-poc-ai-unit-tests/resources/config/application.yaml
 
       - name: Set up Python 3.x
         uses: actions/setup-python@v5

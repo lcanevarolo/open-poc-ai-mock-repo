@@ -97,7 +97,8 @@ jobs:
             {
               "target_project_path": "${{ github.workspace }}",
               "executor.jvm_path": "${{ env.JAVA_HOME }}",
-              "executor.baseline_run_needed": false
+              "executor.baseline_run_needed": false,
+              "selector.forced_classes[0]": "com.piggymetrics.account.service.AccountServiceImpl"
             }
 
       - name: Check application config file
